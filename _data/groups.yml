@@ -7,4 +7,11 @@ groups:
         github: pengu2004
       - name: Amit Shibu
         github: amitshibuk
-
+  - name: Group 2
+    project: "Roomato"
+    repo: "https://github.com/pengu2004/roomato"
+    members:
+      - name: Tejus Mathew
+        github: pengu2004
+      - name: Amit Shibu
+        github: amitshibuk

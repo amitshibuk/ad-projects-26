@@ -1,4 +1,4 @@
-// This is the content for js/main.js
+// This is the updated content for js/main.js
 
 function getContributions(repoUrl, containerId) {
   const urlParts = repoUrl.split('/');
@@ -6,25 +6,34 @@ function getContributions(repoUrl, containerId) {
   const repo = urlParts[4];
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/stats/contributors`;
   const container = document.getElementById(`${containerId}-contributions`);
-  container.innerHTML = 'Loading contributions...';
 
+  // Clear previous results and show a loading message
+  container.innerHTML = '<p>Loading contributions...</p>';
   console.log("Fetching contributions from:", apiUrl);
 
   fetch(apiUrl)
     .then(response => {
+      if (response.status === 202) {
+        // Status 202 means GitHub is still calculating the stats.
+        throw new Error("GitHub is still compiling contributor statistics. Please try again in a moment.");
+      }
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error("Repository not found. Check the URL in groups.yml.");
         } else if (response.status === 403) {
-          throw new Error("API rate limit exceeded. Please wait a bit and try again.");
+          throw new Error("API rate limit exceeded or repository is private. Please wait a bit and try again.");
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return response.json();
     })
     .then(data => {
+      // **THE CRUCIAL FIX IS HERE**
+      // We must check if the returned data is an array before using it.
       if (Array.isArray(data) && data.length > 0) {
         let html = '<h4>Contributions:</h4><ul>';
+        // Sort contributors by total commits, descending
+        data.sort((a, b) => b.total - a.total);
         data.forEach(contributor => {
           html += `
             <li>
@@ -37,7 +46,8 @@ function getContributions(repoUrl, containerId) {
         html += '</ul>';
         container.innerHTML = html;
       } else {
-        container.innerHTML = '<p>No contribution data found. This can happen for new/empty repositories or if GitHub is still compiling the stats. Please try again in a moment.</p>';
+        // This case now correctly handles empty repos or when stats are being compiled.
+        throw new Error("No contribution data found. This repository may be empty or new.");
       }
     })
     .catch(error => {
