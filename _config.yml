@@ -1,0 +1,8 @@
+title: "Class Projects Dashboard"
+description: "Tracking all project groups and contributions"
+theme: minima   # simple default theme
+plugins:
+  - jekyll-data
+
+include:
+  - js
